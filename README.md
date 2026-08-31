@@ -117,9 +117,13 @@ takes a few minutes.
 ./uninstall.sh
 ```
 
-Switches to a stock theme, removes this project's files, and runs
-`omarchy refresh` over the Hyprland and shell configs. Packages are left
-installed; the script prints the one-liner to drop them.
+Switches to a stock theme, removes this project's files, restores the terminal
+fonts, disables the plugins, and resets `looknfeel.lua`, `input.lua`,
+`bindings.lua` and `autostart.lua` -- and nothing else under `~/.config/hypr`.
+Packages are left installed; the script prints the one-liner to drop them.
+
+Everything it displaces goes to `~/.config/omarchy/.backups/`, never back into
+`themes/` or a hook directory.
 
 ## How it treats your machine
 
@@ -129,7 +133,10 @@ installed; the script prints the one-liner to drop them.
   configuration lives in the files Omarchy set aside for you — `looknfeel.lua`,
   `input.lua`, `bindings.lua`, `autostart.lua`.
 - **It never touches `/usr/share/omarchy/`**, which `omarchy update` owns.
-- **It never touches `monitors.lua`**, which is specific to your displays.
+- **It never touches `monitors.lua`**, which is specific to your displays, and
+  neither does `uninstall.sh`. Uninstalling resets only the four Hyprland files
+  the installer writes, one at a time -- not `omarchy refresh hyprland`, which
+  would take your monitor layout and your own `hyprland.lua` with it.
 - **Terminal configs are edited, not overwritten** — only the string
   `JetBrainsMono Nerd Font` is rewritten to `SF Mono`.
 - **Re-running it is safe, and it leaves your theme alone.** Nothing is applied
@@ -204,6 +211,26 @@ half-applied widget, and the anchor in that file needs updating.
   `SUPER+SHIFT+M`, which is Omarchy's Music.)
 - The yellow title-bar button minimises only, never restores -- a button on a
   hidden window is not reachable, so there is nothing for a toggle to do there.
+
+## Development
+
+CI runs on every push and pull request:
+
+```bash
+shellcheck --severity=style install.sh uninstall.sh \
+  lib/generate-wallpapers.sh config/omarchy/hooks/theme-set.d/macos-appearance
+python3 tests/validate-wallpaper-grids.py
+```
+
+`tests/validate-wallpaper-grids.py` checks every colour grid is `COLS x ROWS`
+well-formed `#rrggbb` values and that each grid is actually wired into a
+`render` call. Without it a dropped colour would only surface at render time, on
+a user's machine, after the packages had already been installed. CI also checks
+that every theme directory is installed by `install.sh` and ships the files a
+theme needs, and that the scripts are executable.
+
+The two `shellcheck disable` comments in the tree are deliberate and carry their
+reasons -- notably `setsid $DOCK_CMD`, where the word splitting is the point.
 
 ## Credits
 

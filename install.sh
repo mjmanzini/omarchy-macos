@@ -192,6 +192,20 @@ for theme in macos-light macos-dark ironman; do
     continue
   fi
   dest="$CONFIG/omarchy/themes/$theme"
+
+  # Skip a theme that is already exactly what we would install. Without this,
+  # every run displaced the whole directory into the backups regardless, and
+  # since each theme carries two 16-bit wallpapers that added ~15MB per run --
+  # the backups directory had reached 168MB of byte-identical copies.
+  #
+  # backgrounds/ is excluded from the comparison because the wallpapers are
+  # rendered into the installed theme and deliberately absent from the repo.
+  if [[ -d "$dest" ]] \
+     && diff -qr --exclude=backgrounds "$REPO/config/omarchy/themes/$theme" "$dest" >/dev/null 2>&1; then
+    info "unchanged: theme $theme"
+    continue
+  fi
+
   if [[ -d "$dest" ]]; then
     mkdir -p "$BACKUP_DIR"
     mv "$dest" "$BACKUP_DIR/$theme.bak.$STAMP"
@@ -301,6 +315,7 @@ if ! $DRY_RUN; then
 
   if errors="$(hyprctl configerrors 2>/dev/null)" && [[ -n "$errors" ]]; then
     warn "Hyprland reported config errors:"
+    # shellcheck disable=SC2001  # per-line prefixing; ${var//x/y} cannot do it
     echo "$errors" | sed 's/^/      /'
   else
     ok "Hyprland config is clean"

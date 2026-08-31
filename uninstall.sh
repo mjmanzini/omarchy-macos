@@ -57,9 +57,16 @@ done
 
 step "Resetting Omarchy config to defaults"
 # Each of these backs the current file up on its own before overwriting.
-# `refresh hyprland` covers every ~/.config/hypr/*.lua, hyprland.lua included.
-omarchy refresh hyprland || warn "could not refresh the Hyprland config"
-omarchy refresh shell    || warn "could not refresh the shell config"
+# Refresh ONLY the four files install.sh overwrites. `omarchy refresh hyprland`
+# would be shorter, but it resets every ~/.config/hypr/*.lua -- including
+# monitors.lua, which is specific to your displays and which this project never
+# touches, and hyprland.lua, where your own configuration lives. Blowing away a
+# multi-monitor setup on uninstall is not an acceptable way to tidy up.
+for config in looknfeel input bindings autostart; do
+  omarchy refresh config "hypr/$config.lua" \
+    || warn "could not refresh hypr/$config.lua"
+done
+omarchy refresh shell || warn "could not refresh the shell config"
 omarchy refresh config omarchy/extensions/omarchy-menu.jsonc \
   || warn "could not refresh the menu -- the Apple menu labels may remain"
 
@@ -82,8 +89,12 @@ hyprpm disable hyprexpo 2>/dev/null || true
 hyprpm reload -n 2>/dev/null || true
 
 step "Cleaning up the cloned bar widgets"
-warn "left in place: $CONFIG/omarchy/plugins/$USERNAME.{menu,workspaces}"
-warn "delete them by hand if you want them gone -- the refreshed shell.json no longer loads them"
+if compgen -G "$CONFIG/omarchy/plugins/$USERNAME.*" >/dev/null; then
+  warn "left in place: $CONFIG/omarchy/plugins/$USERNAME.{menu,workspaces}"
+  warn "delete them by hand if you want them gone -- the refreshed shell.json no longer loads them"
+else
+  ok "none to clean up"
+fi
 
 step "Done"
 echo "    Log out and back in. Files this script displaced end in .removed.$STAMP;"

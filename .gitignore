@@ -3,3 +3,7 @@
 
 # Wallpapers are rendered by lib/generate-wallpapers.sh, not stored.
 config/omarchy/themes/*/backgrounds/*.png
+
+# Byte-compiled test/helper scripts
+__pycache__/
+*.pyc
