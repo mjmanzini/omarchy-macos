@@ -1,0 +1,60 @@
+#!/bin/bash
+# Keep GTK apps, the cursor, the UI font and the dock in step with the theme.
+#
+# Omarchy themes only carry an icon theme; GTK theme, cursor, UI font and the
+# dock's stylesheet are not themed by anything. This hook does that, so
+# switching between macos-light and macos-dark changes app chrome and the dock
+# too, not just the palette.
+#
+# Only the macos-* themes get the WhiteSur/Apple treatment. Every other theme
+# is handed back to Omarchy's stock Adwaita look, so this hook doesn't quietly
+# make every theme on the system look like a Mac.
+
+THEME="$1"
+gs() { gsettings set org.gnome.desktop.interface "$@" 2>/dev/null; }
+
+DOCK_CFG="$HOME/.config/nwg-dock-hyprland"
+DOCK_CMD="nwg-dock-hyprland -d -i 40 -p bottom -a center -mb 10 -c omarchy-menu -lp start"
+DOCK_PROC="nwg-dock-hyprla" # /proc comm is capped at 15 chars
+
+apply_dock_style() {
+  local variant="$1"
+  [ -f "$DOCK_CFG/style-$variant.css" ] || return 0
+  cp "$DOCK_CFG/style-$variant.css" "$DOCK_CFG/style.css"
+  # nwg-dock reads its CSS only at startup, so restyling means restarting it.
+  # Only restart a dock that is actually running.
+  if pgrep -x "$DOCK_PROC" >/dev/null 2>&1; then
+    pkill -x "$DOCK_PROC"
+    sleep 1
+    setsid $DOCK_CMD >/dev/null 2>&1 </dev/null &
+  fi
+}
+
+case "$THEME" in
+  macos-light)
+    gs gtk-theme "WhiteSur-Light"
+    gs color-scheme "prefer-light"
+    gs cursor-theme "macos-tahoe-cursor"
+    gs cursor-size 32
+    gs font-name "SF Pro Text 11"
+    gs document-font-name "SF Pro Text 11"
+    apply_dock_style light
+    ;;
+  macos-dark)
+    gs gtk-theme "WhiteSur-Dark"
+    gs color-scheme "prefer-dark"
+    gs cursor-theme "macos-tahoe-cursor"
+    gs cursor-size 32
+    gs font-name "SF Pro Text 11"
+    gs document-font-name "SF Pro Text 11"
+    apply_dock_style dark
+    ;;
+  *)
+    # Not a macOS theme — restore Omarchy's defaults.
+    gs gtk-theme "Adwaita"
+    gs cursor-theme "default"
+    gs cursor-size 24
+    gs font-name "Adwaita Sans 11"
+    gs document-font-name "Adwaita Sans 11"
+    ;;
+esac

@@ -1,0 +1,37 @@
+mode = "light"
+
+# macOS light appearance. Surfaces follow Apple's grouped-background greys,
+# text is the near-black Apple uses for labels, and the accent is systemBlue.
+accent = "#007aff"
+selection = "#d1d1d6"
+muted = "#8e8e93"
+
+background = "#f2f2f7"
+dark_background = "#e5e5ea"
+darker_background = "#d1d1d6"
+lighter_background = "#ffffff"
+
+foreground = "#1d1d1f"
+dark_foreground = "#8e8e93"
+light_foreground = "#3a3a3c"
+bright_foreground = "#000000"
+
+# ANSI colours use Apple's *accessible* light-mode system colours. The standard
+# ones (systemYellow #ffcc00, systemGreen #34c759) are tuned for fills on white
+# and are close to unreadable as terminal text, so the darker accessible
+# variants are used here and the vivid ones are kept for the bright_* slots.
+red = "#d70015"
+yellow = "#b25000"
+orange = "#c93400"
+green = "#248a3d"
+cyan = "#0071a4"
+blue = "#0040dd"
+magenta = "#8944ab"
+brown = "#7f6545"
+
+bright_red = "#ff3b30"
+bright_yellow = "#ff9500"
+bright_green = "#34c759"
+bright_cyan = "#5ac8fa"
+bright_blue = "#007aff"
+bright_magenta = "#af52de"
