@@ -28,15 +28,31 @@ step "Switching off the macOS theme"
 # the Adwaita UI font, so do this while the hook is still installed.
 omarchy theme set tokyo-night 2>/dev/null || warn "could not switch theme -- pick one with 'omarchy theme set'"
 
+BACKUP_DIR="$CONFIG/omarchy/.backups"
+
 step "Removing this project's files"
-for f in "$CONFIG/omarchy/hooks/theme-set.d/macos-appearance" \
-         "$CONFIG/nwg-dock-hyprland/style-light.css" \
+# The hook cannot be renamed in place: omarchy-hook runs every file in
+# theme-set.d/, so a macos-appearance.removed.* would keep running.
+HOOK="$CONFIG/omarchy/hooks/theme-set.d/macos-appearance"
+if [[ -e "$HOOK" ]]; then
+  mkdir -p "$BACKUP_DIR"
+  mv "$HOOK" "$BACKUP_DIR/macos-appearance.removed.$STAMP"
+  ok "removed: ${HOOK/#$HOME/\~}"
+fi
+for f in "$CONFIG/nwg-dock-hyprland/style-light.css" \
          "$CONFIG/nwg-dock-hyprland/style-dark.css"; do
   [[ -e "$f" ]] && mv "$f" "$f.removed.$STAMP" && ok "removed: ${f/#$HOME/\~}"
 done
-for theme in macos-light macos-dark; do
+# Themes move out of themes/ entirely: omarchy-theme-list treats every directory
+# in there as a theme, so a <name>.removed.* would just become a broken entry in
+# the picker.
+for theme in macos-light macos-dark ironman; do
   d="$CONFIG/omarchy/themes/$theme"
-  [[ -d "$d" ]] && mv "$d" "$d.removed.$STAMP" && ok "removed theme: $theme"
+  if [[ -d "$d" ]]; then
+    mkdir -p "$BACKUP_DIR"
+    mv "$d" "$BACKUP_DIR/$theme.removed.$STAMP"
+    ok "removed theme: $theme"
+  fi
 done
 
 step "Resetting Omarchy config to defaults"

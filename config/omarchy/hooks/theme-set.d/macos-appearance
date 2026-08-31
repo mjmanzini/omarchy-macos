@@ -6,12 +6,37 @@
 # switching between macos-light and macos-dark changes app chrome and the dock
 # too, not just the palette.
 #
-# Only the macos-* themes get the WhiteSur/Apple treatment. Every other theme
-# is handed back to Omarchy's stock Adwaita look, so this hook doesn't quietly
-# make every theme on the system look like a Mac.
+# The macos-* themes get the WhiteSur/Apple treatment and ironman gets its own.
+# Every other theme -- Omarchy's stock ones included -- gets Adwaita matched to
+# whether the theme is light or dark, plus the same pointer and UI font as the
+# rest of the system.
+#
+# Reverting the pointer and font for stock themes, which this hook used to do,
+# made them worse rather than neutral: the window chrome (title bars, dock,
+# rounding, blur) lives in looknfeel.lua and applies to every theme, so a stock
+# theme ended up with Mac chrome, an Adwaita pointer and an Adwaita font at
+# once. Keeping those two constant means switching theme changes the colours
+# and nothing else. ./uninstall.sh is what puts the fully stock look back.
 
 THEME="$1"
 gs() { gsettings set org.gnome.desktop.interface "$@" 2>/dev/null; }
+
+# Every Omarchy theme declares mode = "light" or "dark" in its colors.toml.
+# Checked by name in both theme locations, then the applied-theme state dir as
+# a fallback, so this works for user themes and stock ones alike.
+theme_mode() {
+  local candidate mode
+  for candidate in \
+    "$HOME/.config/omarchy/themes/$1/colors.toml" \
+    "${OMARCHY_PATH:-/usr/share/omarchy}/themes/$1/colors.toml" \
+    "$HOME/.local/state/omarchy/current/theme/colors.toml"; do
+    [ -f "$candidate" ] || continue
+    mode=$(sed -n 's/^[[:space:]]*mode[[:space:]]*=[[:space:]]*"\([a-z]*\)".*/\1/p' "$candidate" | head -1)
+    if [ -n "$mode" ]; then echo "$mode"; return; fi
+  done
+  # Omarchy's themes are predominantly dark, so that is the safer guess.
+  echo dark
+}
 
 DOCK_CFG="$HOME/.config/nwg-dock-hyprland"
 DOCK_CMD="nwg-dock-hyprland -d -i 40 -p bottom -a center -mb 10 -c omarchy-menu -lp start"
@@ -49,12 +74,37 @@ case "$THEME" in
     gs document-font-name "SF Pro Text 11"
     apply_dock_style dark
     ;;
+  ironman)
+    # Adwaita-dark rather than WhiteSur: the Mac chrome fights the red plate,
+    # and Adwaita's neutral dark greys let the gold accent do the talking.
+    # The icon set comes from ironman/icons.theme, which Omarchy applies.
+    gs gtk-theme "Adwaita-dark"
+    gs color-scheme "prefer-dark"
+    # Keep the Tahoe pointer — it is a well-drawn cursor, and nothing in the
+    # AUR ships an Iron Man one worth the dependency.
+    gs cursor-theme "macos-tahoe-cursor"
+    gs cursor-size 32
+    gs font-name "SF Pro Text 11"
+    gs document-font-name "SF Pro Text 11"
+    apply_dock_style dark
+    ;;
   *)
-    # Not a macOS theme — restore Omarchy's defaults.
-    gs gtk-theme "Adwaita"
-    gs cursor-theme "default"
-    gs cursor-size 24
-    gs font-name "Adwaita Sans 11"
-    gs document-font-name "Adwaita Sans 11"
+    # Any other theme, stock or third-party: Adwaita matched to the theme's own
+    # light/dark mode, and the dock restyled to match. Without this a dark theme
+    # like tokyo-night got light Adwaita apps and whichever dock style happened
+    # to be left over.
+    if [ "$(theme_mode "$THEME")" = "light" ]; then
+      gs gtk-theme "Adwaita"
+      gs color-scheme "prefer-light"
+      apply_dock_style light
+    else
+      gs gtk-theme "Adwaita-dark"
+      gs color-scheme "prefer-dark"
+      apply_dock_style dark
+    fi
+    gs cursor-theme "macos-tahoe-cursor"
+    gs cursor-size 32
+    gs font-name "SF Pro Text 11"
+    gs document-font-name "SF Pro Text 11"
     ;;
 esac

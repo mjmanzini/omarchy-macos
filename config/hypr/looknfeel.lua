@@ -150,8 +150,18 @@ local function rgb(hex)
   return "rgb(" .. hex:gsub("#", "") .. ")"
 end
 
-local bar_bg = theme_color("background", "#f2f2f7")
-local bar_fg = theme_color("foreground", "#1d1d1f")
+-- A theme can override the window chrome with custom keys in its colors.toml.
+-- Omarchy ignores keys it doesn't recognise, and anything a theme leaves out
+-- falls back to the macOS value -- so the macos-* themes are unaffected by
+-- these lines existing. The ironman theme uses them to put a red plate and
+-- arc-reactor buttons on every window.
+local theme_bg = theme_color("background", "#f2f2f7")
+local bar_bg = theme_color("titlebar", theme_bg)
+local bar_fg = theme_color("titlebar_text", theme_color("foreground", "#1d1d1f"))
+
+local btn_close = theme_color("button_close", "#ff5f57")
+local btn_min   = theme_color("button_min", "#febc2e")
+local btn_max   = theme_color("button_max", "#28c840")
 
 -- Everything below needs the hyprbars/hyprexpo plugins, which hyprpm loads
 -- from autostart.lua — i.e. AFTER Hyprland has already parsed this file once.
@@ -200,7 +210,7 @@ hl.config({
 -- With left alignment, buttons render LEFT to RIGHT in definition order, so
 -- red-yellow-green is simply defined in that order — same as a Mac.
 hl.plugin.hyprbars.add_button({
-  bg_color = "rgb(ff5f57)",
+  bg_color = rgb(btn_close),
   fg_color = "rgb(1a1a1a)",
   size = 11,
   icon = "x",
@@ -208,16 +218,19 @@ hl.plugin.hyprbars.add_button({
 })
 
 hl.plugin.hyprbars.add_button({
-  bg_color = "rgb(febc2e)",
+  bg_color = rgb(btn_min),
   fg_color = "rgb(1a1a1a)",
   size = 11,
   icon = "-",
   -- Hyprland has no minimise; the scratchpad is where SUPER+M sends windows too.
+  -- Minimise only, never restore -- a title bar button on a hidden window is
+  -- not reachable, so there is nothing for a toggle to do here. Bring windows
+  -- back with SUPER+CTRL+M, or SUPER+S then SUPER+M.
   action = "hyprctl dispatch 'hl.dsp.window.move({ workspace = \"special:scratchpad\", follow = false })'",
 })
 
 hl.plugin.hyprbars.add_button({
-  bg_color = "rgb(28c840)",
+  bg_color = rgb(btn_max),
   fg_color = "rgb(1a1a1a)",
   size = 11,
   icon = "+",
@@ -236,7 +249,7 @@ hl.config({
       columns = 3,
       gaps_in = 5,
       gaps_out = 0,
-      bg_col = rgb(bar_bg),
+      bg_col = rgb(theme_bg),
       -- Keep the current workspace centred in the grid, as Mission Control does.
       workspace_method = "center current",
       gesture_distance = 200,
