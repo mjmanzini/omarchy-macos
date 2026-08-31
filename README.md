@@ -25,7 +25,7 @@ Then log out and back in.
 | **Bar** | Apple logo menu at the far left, workspaces as page-control dots, clock on the right |
 | **Dock** | `nwg-dock-hyprland` at the bottom, centred, auto-hiding, frosted, with running-app dots |
 | **Mission Control** | `hyprexpo` grid on `CTRL+↑` or a four-finger swipe up |
-| **Themes** | `macos-light` and `macos-dark`, built from Apple's published system colours |
+| **Themes** | `macos-light` and `macos-dark`, built from Apple's published system colours, with rendered gradient wallpapers |
 | **Fonts** | SF Pro for UI, SF Mono for terminals |
 | **Pointer** | macOS Tahoe cursor at its native 32px |
 | **Trackpad** | Natural scrolling, two-finger right click, three-finger swipe between Spaces |
@@ -57,8 +57,8 @@ every theme on the machine look like a Mac.
 
 Omarchy on Arch, with a working AUR (`omarchy pkg aur accessible`).
 
-`install.sh` pulls in `nwg-dock-hyprland` from the official repos and
-`apple-fonts`, `macos-tahoe-cursor`, `whitesur-gtk-theme` and
+`install.sh` pulls in `nwg-dock-hyprland` and `imagemagick` from the official
+repos and `apple-fonts`, `macos-tahoe-cursor`, `whitesur-gtk-theme` and
 `whitesur-icon-theme` from the AUR, then builds `hyprbars` and `hyprexpo`
 through `hyprpm`. `apple-fonts` fetches the real SF families from Apple and
 takes a few minutes.
@@ -91,6 +91,29 @@ installed; the script prints the one-liner to drop them.
   `JetBrainsMono Nerd Font` is rewritten to `SF Mono`.
 - **Re-running it is safe.** Nothing is applied twice, and `--dry-run` shows you
   the plan first.
+- **Nothing is redistributed that isn't ours.** The SF fonts and the cursor art
+  are Apple's, fetched from Apple by their AUR packages. The wallpapers are
+  generated gradients.
+
+### The wallpapers are rendered, not stored
+
+Four 2560x1600 16-bit PNGs is 10MB of permanent git history for what is, in the
+end, a smooth blend between a handful of colours. So each wallpaper is described
+instead by a 7x6 grid of control colours in `lib/generate-wallpapers.sh`, which
+ImageMagick interpolates with Shepards (inverse-distance) weighting:
+
+```bash
+./lib/generate-wallpapers.sh                       # into config/, to preview
+./lib/generate-wallpapers.sh ~/.config/omarchy/themes   # what install.sh runs
+```
+
+The grids were fitted by least squares against the original renders and
+reproduce them at 38-41dB PSNR (about 1.2% RMSE) -- no visible difference on a
+gradient this smooth. Output is 16-bit, because an 8-bit gradient stretched over
+2560px bands badly. Rendering all four takes about 20 seconds.
+
+To restyle a wallpaper, edit its colour grid. Each row of the grid is a row of
+control points spread evenly across the image, top row first.
 
 ### The two bar widgets
 
@@ -124,8 +147,8 @@ Built on [Omarchy](https://omarchy.org) by DHH and contributors. Uses
 [hyprbars and hyprexpo](https://github.com/hyprwm/hyprland-plugins), and
 [nwg-dock-hyprland](https://github.com/nwg-piotr/nwg-dock-hyprland). The SF
 fonts and the cursor art are Apple's, fetched from Apple by their AUR packages
-rather than redistributed here. Wallpapers are generated gradients, not Apple
-artwork.
+rather than redistributed here. The wallpapers are generated gradients, not
+Apple artwork.
 
 Not affiliated with or endorsed by Apple.
 

@@ -1,2 +1,5 @@
 *.bak.*
 *.removed.*
+
+# Wallpapers are rendered by lib/generate-wallpapers.sh, not stored.
+config/omarchy/themes/*/backgrounds/*.png

@@ -66,7 +66,7 @@ ok "Omarchy $(omarchy version 2>/dev/null || echo '(version unknown)') as $USERN
 $DRY_RUN && warn "dry run -- nothing will be changed"
 
 # --- packages ---------------------------------------------------------------
-PACMAN_PKGS=(nwg-dock-hyprland)
+PACMAN_PKGS=(nwg-dock-hyprland imagemagick)
 AUR_PKGS=(apple-fonts macos-tahoe-cursor whitesur-gtk-theme whitesur-icon-theme)
 
 if $DO_PACKAGES; then
@@ -157,8 +157,25 @@ for theme in macos-light macos-dark; do
   [[ -d "$dest" ]] && mv "$dest" "$dest.bak.$STAMP" && info "backed up existing $theme"
   mkdir -p "$dest"
   cp -r "$REPO/config/omarchy/themes/$theme/." "$dest/"
+  # backgrounds/.gitkeep only exists to keep the empty dir in git.
+  rm -f "$dest/backgrounds/.gitkeep"
   ok "installed theme: $theme"
 done
+
+# The wallpapers are rendered, not stored -- see lib/generate-wallpapers.sh.
+# Four 2560x1600 16-bit PNGs would be 10MB of git history for what is a blend
+# between 42 colours.
+step "Rendering the wallpapers"
+if $DRY_RUN; then
+  echo "    ${dim}would render 4 wallpapers into ~/.config/omarchy/themes${reset}"
+elif ! command -v magick >/dev/null; then
+  warn "ImageMagick is missing, so the wallpapers were not rendered."
+  warn "Install it and run: ./lib/generate-wallpapers.sh \"$CONFIG/omarchy/themes\""
+else
+  info "${dim}takes about 20 seconds${reset}"
+  "$REPO/lib/generate-wallpapers.sh" "$CONFIG/omarchy/themes"
+  ok "wallpapers rendered"
+fi
 
 step "Installing the dock, menu and theme hook"
 install_file "$REPO/config/nwg-dock-hyprland/style-light.css" "$CONFIG/nwg-dock-hyprland/style-light.css"
