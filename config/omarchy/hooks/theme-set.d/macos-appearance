@@ -6,9 +6,9 @@
 # switching between macos-light and macos-dark changes app chrome and the dock
 # too, not just the palette.
 #
-# Only the macos-* themes get the WhiteSur/Apple treatment. Every other theme
-# is handed back to Omarchy's stock Adwaita look, so this hook doesn't quietly
-# make every theme on the system look like a Mac.
+# Only the macos-* themes get the WhiteSur/Apple treatment, and ironman gets
+# its own. Every other theme is handed back to Omarchy's stock Adwaita look, so
+# this hook doesn't quietly restyle every theme on the system.
 
 THEME="$1"
 gs() { gsettings set org.gnome.desktop.interface "$@" 2>/dev/null; }
@@ -49,8 +49,22 @@ case "$THEME" in
     gs document-font-name "SF Pro Text 11"
     apply_dock_style dark
     ;;
+  ironman)
+    # Adwaita-dark rather than WhiteSur: the Mac chrome fights the red plate,
+    # and Adwaita's neutral dark greys let the gold accent do the talking.
+    # The icon set comes from ironman/icons.theme, which Omarchy applies.
+    gs gtk-theme "Adwaita-dark"
+    gs color-scheme "prefer-dark"
+    # Keep the Tahoe pointer — it is a well-drawn cursor, and nothing in the
+    # AUR ships an Iron Man one worth the dependency.
+    gs cursor-theme "macos-tahoe-cursor"
+    gs cursor-size 32
+    gs font-name "SF Pro Text 11"
+    gs document-font-name "SF Pro Text 11"
+    apply_dock_style dark
+    ;;
   *)
-    # Not a macOS theme — restore Omarchy's defaults.
+    # Not a themed variant — restore Omarchy's defaults.
     gs gtk-theme "Adwaita"
     gs cursor-theme "default"
     gs cursor-size 24

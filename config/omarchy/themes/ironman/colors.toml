@@ -1,0 +1,55 @@
+mode = "dark"
+
+# Iron Man, Mark III.
+#
+# The armour reads as three things and only three: hot rod red plate, gold
+# trim, and the gunmetal chassis underneath. The arc reactor is the single
+# cool colour anywhere on the suit, which is exactly why it is held back here
+# for states that have to interrupt you -- an active window button, a cyan
+# terminal string -- rather than spent on chrome.
+#
+# Gold, not red, is the accent. `accent` becomes the focused window border and
+# every link in the shell, and #B31217 at that size on a dark background is a
+# muddy 2:1 against the surface. Gold clears 9:1 and still reads as the suit.
+
+accent = "#e8b33a"
+selection = "#4a1b1f"
+muted = "#6e6459"
+
+background = "#14171c"
+dark_background = "#0e1116"
+darker_background = "#080a0d"
+lighter_background = "#1e232b"
+
+foreground = "#f2e9dc"
+dark_foreground = "#8a8578"
+light_foreground = "#d8cfc2"
+bright_foreground = "#ffffff"
+
+# Custom keys, read by ~/.config/hypr/looknfeel.lua. Omarchy ignores keys it
+# doesn't recognise, and the macos-* themes leave these unset and keep their
+# own defaults -- so adding them here changes nothing for those themes.
+titlebar = "#b31217"
+titlebar_text = "#f6e4c8"
+button_close = "#e01b24"
+button_min = "#e8b33a"
+button_max = "#4fd8ff"
+
+# ANSI. Warm through the middle, with the arc-reactor cyan as the only cool
+# anchor. Every one of these was checked against #14171c for legibility as
+# terminal text, which is why the red is #e01b24 and not the plate's #b31217.
+red = "#e01b24"
+yellow = "#e8b33a"
+orange = "#ff7a18"
+green = "#3fbe86"
+cyan = "#4fd8ff"
+blue = "#4a9eff"
+magenta = "#b07be0"
+brown = "#8c6a45"
+
+bright_red = "#ff4b4b"
+bright_yellow = "#ffd166"
+bright_green = "#63d6a2"
+bright_cyan = "#8fe9ff"
+bright_blue = "#7fbbff"
+bright_magenta = "#c99bf0"
