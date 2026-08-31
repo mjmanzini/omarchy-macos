@@ -51,6 +51,9 @@ apply_dock_style() {
   if pgrep -x "$DOCK_PROC" >/dev/null 2>&1; then
     pkill -x "$DOCK_PROC"
     sleep 1
+    # shellcheck disable=SC2086  # DOCK_CMD is a command line, not a path: the
+    # word splitting is the point, and quoting it would try to exec the whole
+    # string as a single binary.
     setsid $DOCK_CMD >/dev/null 2>&1 </dev/null &
   fi
 }
