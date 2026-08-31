@@ -243,7 +243,8 @@ cat <<EOF
 
     ${bold}Keys${reset}
       SUPER+Q          close window (Cmd+Q)      SUPER+TAB    cycle windows (Cmd+Tab)
-      SUPER+M          minimise to scratchpad    CTRL+←/→     move between Spaces
+      SUPER+M          minimise / restore        CTRL+←/→     move between Spaces
+      SUPER+CTRL+M     restore last minimised    SUPER+S      peek at minimised
       CTRL+↑           Mission Control           3-finger ←/→ move between Spaces
                                                  4-finger ↑   Mission Control
 
