@@ -223,6 +223,9 @@ hl.plugin.hyprbars.add_button({
   size = 11,
   icon = "-",
   -- Hyprland has no minimise; the scratchpad is where SUPER+M sends windows too.
+  -- Minimise only, never restore -- a title bar button on a hidden window is
+  -- not reachable, so there is nothing for a toggle to do here. Bring windows
+  -- back with SUPER+CTRL+M, or SUPER+S then SUPER+M.
   action = "hyprctl dispatch 'hl.dsp.window.move({ workspace = \"special:scratchpad\", follow = false })'",
 })
 

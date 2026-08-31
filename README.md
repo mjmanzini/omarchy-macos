@@ -35,7 +35,8 @@ Then log out and back in.
 | | | | |
 |---|---|---|---|
 | `SUPER+Q` | Close window (Cmd+Q) | `SUPER+TAB` | Cycle windows (Cmd+Tab) |
-| `SUPER+M` | Minimise to scratchpad | `CTRL+←/→` | Move between Spaces |
+| `SUPER+M` | Minimise / restore | `CTRL+←/→` | Move between Spaces |
+| `SUPER+CTRL+M` | Restore last minimised | `SUPER+S` | Peek at minimised windows |
 | `CTRL+↑` | Mission Control | `SUPER+SPACE` | Launcher (Spotlight) |
 
 Omarchy already ships `SUPER+C/V/X` as universal copy/paste/cut and `SUPER+W`
@@ -189,8 +190,17 @@ half-applied widget, and the anchor in that file needs updating.
   wrong spelling looks like the theme simply not doing much.
 - The dock auto-hides. Push the pointer to the bottom edge to reveal it, or drop
   the `-d` flag in `config/hypr/autostart.lua` to pin it.
-- Hyprland has no minimise, so `SUPER+M` stashes a window in the scratchpad and
-  `SUPER+S` brings it back.
+- **Minimise round-trips.** Hyprland has no minimise, so `SUPER+M` parks a
+  window on the scratchpad special workspace. On its own that is a one-way
+  trip -- `SUPER+S` only toggles whether the scratchpad is *shown*, and nothing
+  in Omarchy moves a window back out, so minimised windows pile up in there.
+  `SUPER+M` is therefore a toggle: press it on a window you are peeking at in
+  the scratchpad and it comes back to the workspace you are on. `SUPER+CTRL+M`
+  brings back the last thing you minimised without peeking first, which is the
+  closest thing to clicking a Dock icon. (`SUPER+CTRL+M` rather than
+  `SUPER+SHIFT+M`, which is Omarchy's Music.)
+- The yellow title-bar button minimises only, never restores -- a button on a
+  hidden window is not reachable, so there is nothing for a toggle to do there.
 
 ## Credits
 
