@@ -39,12 +39,19 @@ warn() { echo "    ${yellow}!${reset} $*"; }
 die()  { echo "${red}error:${reset} $*" >&2; exit 1; }
 run()  { if $DRY_RUN; then echo "    ${dim}would run: $*${reset}"; else "$@"; fi; }
 
-# Anything displaced by this installer is kept here. Backups normally sit next
-# to the original, but a hook directory is not a safe place for them: omarchy-hook
-# runs EVERY file in <event>.d/ (it skips only *.sample and does not check the
-# executable bit), so a stale macos-appearance.bak.* would run alongside the real
-# hook and, sorting after it, silently undo whatever it just set.
-BACKUP_DIR="$CONFIG/omarchy/hooks/.backups"
+# Anything displaced by this installer is kept here, deliberately outside every
+# directory Omarchy enumerates. Backups normally sit next to the original, but
+# two of Omarchy's directories are scanned wholesale and a backup left in either
+# one becomes live config:
+#
+#   hooks/<event>.d/  omarchy-hook runs EVERY file in it (it skips only *.sample
+#                     and does not check the executable bit), so a stale
+#                     macos-appearance.bak.* runs alongside the real hook and,
+#                     sorting after it, silently undoes what it just set.
+#   themes/           omarchy-theme-list treats EVERY directory in it as a theme,
+#                     dot-directories included, so a macos-light.bak.* shows up
+#                     in the theme picker as "Macos Light.bak.1788181233".
+BACKUP_DIR="$CONFIG/omarchy/.backups"
 
 # Copy a repo file into place, backing up anything already there that differs.
 # Pass a third argument to divert the backup out of the destination directory.
@@ -171,7 +178,11 @@ for theme in macos-light macos-dark ironman; do
     continue
   fi
   dest="$CONFIG/omarchy/themes/$theme"
-  [[ -d "$dest" ]] && mv "$dest" "$dest.bak.$STAMP" && info "backed up existing $theme"
+  if [[ -d "$dest" ]]; then
+    mkdir -p "$BACKUP_DIR"
+    mv "$dest" "$BACKUP_DIR/$theme.bak.$STAMP"
+    info "backed up existing $theme"
+  fi
   mkdir -p "$dest"
   cp -r "$REPO/config/omarchy/themes/$theme/." "$dest/"
   # backgrounds/.gitkeep only exists to keep the empty dir in git.
@@ -194,18 +205,34 @@ else
   ok "wallpapers rendered"
 fi
 
-step "Installing the dock, menu and theme hook"
-# Earlier versions backed the hook up in place, which left executable copies in
-# a directory omarchy-hook runs wholesale. Move any stragglers out.
-if ! $DRY_RUN; then
-  shopt -s nullglob
-  for stale in "$CONFIG/omarchy/hooks/theme-set.d"/*.bak.* "$CONFIG/omarchy/hooks/theme-set.d"/*.removed.*; do
+# Earlier versions of this installer left backups inside the two directories
+# Omarchy scans, where they became a duplicate hook and a screenful of fake
+# themes in the picker. Sweep any out before doing anything else.
+step "Checking for stray backups from earlier versions"
+if $DRY_RUN; then
+  info "${dim}would move any stale backups out of themes/ and theme-set.d/${reset}"
+else
+  shopt -s nullglob dotglob
+  stale_count=0
+  for stale in "$CONFIG/omarchy/themes"/*.bak.* \
+               "$CONFIG/omarchy/hooks/theme-set.d"/*.bak.* \
+               "$CONFIG/omarchy/hooks/theme-set.d"/*.removed.* \
+               "$CONFIG/omarchy/hooks/.backups"/*; do
     mkdir -p "$BACKUP_DIR"
-    mv "$stale" "$BACKUP_DIR/"
-    warn "moved a stale hook backup out of theme-set.d: $(basename "$stale")"
+    mv "$stale" "$BACKUP_DIR/" 2>/dev/null || true
+    stale_count=$(( stale_count + 1 ))
   done
-  shopt -u nullglob
+  rmdir "$CONFIG/omarchy/hooks/.backups" 2>/dev/null || true
+  shopt -u nullglob dotglob
+  if (( stale_count > 0 )); then
+    warn "moved $stale_count stray backup(s) into ${BACKUP_DIR/#$HOME/\~}"
+    warn "these were showing up as fake themes and a duplicate theme hook"
+  else
+    ok "none found"
+  fi
 fi
+
+step "Installing the dock, menu and theme hook"
 install_file "$REPO/config/nwg-dock-hyprland/style-light.css" "$CONFIG/nwg-dock-hyprland/style-light.css"
 install_file "$REPO/config/nwg-dock-hyprland/style-dark.css"  "$CONFIG/nwg-dock-hyprland/style-dark.css"
 install_file "$REPO/config/omarchy/extensions/omarchy-menu.jsonc" "$CONFIG/omarchy/extensions/omarchy-menu.jsonc"
