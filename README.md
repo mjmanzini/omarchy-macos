@@ -8,7 +8,7 @@ Control, an Apple menu, SF Pro / SF Mono throughout, the macOS pointer, and
 Cmd-key muscle memory.
 
 ```bash
-git clone https://github.com/USER/omarchy-macos.git
+git clone https://github.com/mjmanzini/omarchy-macos.git
 cd omarchy-macos
 ./install.sh
 ```
