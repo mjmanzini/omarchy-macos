@@ -89,8 +89,11 @@ installed; the script prints the one-liner to drop them.
 - **It never touches `monitors.lua`**, which is specific to your displays.
 - **Terminal configs are edited, not overwritten** — only the string
   `JetBrainsMono Nerd Font` is rewritten to `SF Mono`.
-- **Re-running it is safe.** Nothing is applied twice, and `--dry-run` shows you
-  the plan first.
+- **Re-running it is safe, and it leaves your theme alone.** Nothing is applied
+  twice, and `--dry-run` shows you the plan first. A first install ends by
+  switching to `macos-light` -- that is the point of running it -- but a re-run
+  re-applies whichever theme you are already on, whether that is `ironman` or
+  Nord. Updating the project does not reset your desktop.
 - **Nothing is redistributed that isn't ours.** The SF fonts and the cursor art
   are Apple's, fetched from Apple by their AUR packages. The wallpapers are
   generated gradients.

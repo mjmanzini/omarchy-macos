@@ -65,6 +65,20 @@ command -v pacman  >/dev/null || die "this needs an Arch-based system"
 ok "Omarchy $(omarchy version 2>/dev/null || echo '(version unknown)') as $USERNAME"
 $DRY_RUN && warn "dry run -- nothing will be changed"
 
+# Read both of these BEFORE anything is written, because installing the themes
+# is what would otherwise make a re-run look like a first run.
+#
+# A first install ends by switching to macos-light -- that is the point of
+# running it. A re-run must not: you may have deliberately settled on ironman,
+# or on Nord, and an installer that resets your desktop every time you update it
+# is obnoxious. So a re-run re-applies whatever you are already on, which still
+# gets the hook and the regenerated theme files picked up.
+FIRST_INSTALL=true
+[[ -d "$CONFIG/omarchy/themes/macos-light" ]] && FIRST_INSTALL=false
+
+CURRENT_THEME="$(cat "$HOME/.local/state/omarchy/current/theme.name" 2>/dev/null || true)"
+[[ -n "$CURRENT_THEME" ]] || CURRENT_THEME="$(omarchy theme current 2>/dev/null || true)"
+
 # --- packages ---------------------------------------------------------------
 PACMAN_PKGS=(nwg-dock-hyprland imagemagick)
 AUR_PKGS=(apple-fonts macos-tahoe-cursor whitesur-gtk-theme whitesur-icon-theme)
@@ -210,7 +224,13 @@ fi
 
 # --- apply ------------------------------------------------------------------
 step "Applying"
-run omarchy theme set macos-light
+if $FIRST_INSTALL || [[ -z "$CURRENT_THEME" ]]; then
+  info "setting the theme to macos-light"
+  run omarchy theme set macos-light
+else
+  info "keeping the theme you are on: $CURRENT_THEME"
+  run omarchy theme set "$CURRENT_THEME"
+fi
 run hyprctl reload
 
 if ! $DRY_RUN; then
