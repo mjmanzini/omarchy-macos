@@ -39,9 +39,17 @@ warn() { echo "    ${yellow}!${reset} $*"; }
 die()  { echo "${red}error:${reset} $*" >&2; exit 1; }
 run()  { if $DRY_RUN; then echo "    ${dim}would run: $*${reset}"; else "$@"; fi; }
 
+# Anything displaced by this installer is kept here. Backups normally sit next
+# to the original, but a hook directory is not a safe place for them: omarchy-hook
+# runs EVERY file in <event>.d/ (it skips only *.sample and does not check the
+# executable bit), so a stale macos-appearance.bak.* would run alongside the real
+# hook and, sorting after it, silently undo whatever it just set.
+BACKUP_DIR="$CONFIG/omarchy/hooks/.backups"
+
 # Copy a repo file into place, backing up anything already there that differs.
+# Pass a third argument to divert the backup out of the destination directory.
 install_file() {
-  local src="$1" dest="$2"
+  local src="$1" dest="$2" backup_dir="${3:-}" backup
   [[ -f "$src" ]] || die "missing repo file: $src"
   if [[ -f "$dest" ]] && cmp -s "$src" "$dest"; then
     info "unchanged: ${dest/#$HOME/\~}"
@@ -52,7 +60,16 @@ install_file() {
     return
   fi
   mkdir -p "$(dirname "$dest")"
-  [[ -f "$dest" ]] && cp "$dest" "$dest.bak.$STAMP" && info "backed up: ${dest/#$HOME/\~}.bak.$STAMP"
+  if [[ -f "$dest" ]]; then
+    if [[ -n "$backup_dir" ]]; then
+      mkdir -p "$backup_dir"
+      backup="$backup_dir/$(basename "$dest").bak.$STAMP"
+    else
+      backup="$dest.bak.$STAMP"
+    fi
+    cp "$dest" "$backup"
+    info "backed up: ${backup/#$HOME/\~}"
+  fi
   cp "$src" "$dest"
   ok "installed: ${dest/#$HOME/\~}"
 }
@@ -148,7 +165,7 @@ done
 
 # --- Omarchy themes, menu, dock, hook ---------------------------------------
 step "Installing the macOS themes"
-for theme in macos-light macos-dark; do
+for theme in macos-light macos-dark ironman; do
   if $DRY_RUN; then
     echo "    ${dim}would install theme $theme${reset}"
     continue
@@ -167,7 +184,7 @@ done
 # between 42 colours.
 step "Rendering the wallpapers"
 if $DRY_RUN; then
-  echo "    ${dim}would render 4 wallpapers into ~/.config/omarchy/themes${reset}"
+  echo "    ${dim}would render 6 wallpapers into ~/.config/omarchy/themes${reset}"
 elif ! command -v magick >/dev/null; then
   warn "ImageMagick is missing, so the wallpapers were not rendered."
   warn "Install it and run: ./lib/generate-wallpapers.sh \"$CONFIG/omarchy/themes\""
@@ -178,10 +195,21 @@ else
 fi
 
 step "Installing the dock, menu and theme hook"
+# Earlier versions backed the hook up in place, which left executable copies in
+# a directory omarchy-hook runs wholesale. Move any stragglers out.
+if ! $DRY_RUN; then
+  shopt -s nullglob
+  for stale in "$CONFIG/omarchy/hooks/theme-set.d"/*.bak.* "$CONFIG/omarchy/hooks/theme-set.d"/*.removed.*; do
+    mkdir -p "$BACKUP_DIR"
+    mv "$stale" "$BACKUP_DIR/"
+    warn "moved a stale hook backup out of theme-set.d: $(basename "$stale")"
+  done
+  shopt -u nullglob
+fi
 install_file "$REPO/config/nwg-dock-hyprland/style-light.css" "$CONFIG/nwg-dock-hyprland/style-light.css"
 install_file "$REPO/config/nwg-dock-hyprland/style-dark.css"  "$CONFIG/nwg-dock-hyprland/style-dark.css"
 install_file "$REPO/config/omarchy/extensions/omarchy-menu.jsonc" "$CONFIG/omarchy/extensions/omarchy-menu.jsonc"
-install_file "$REPO/config/omarchy/hooks/theme-set.d/macos-appearance" "$CONFIG/omarchy/hooks/theme-set.d/macos-appearance"
+install_file "$REPO/config/omarchy/hooks/theme-set.d/macos-appearance" "$CONFIG/omarchy/hooks/theme-set.d/macos-appearance" "$BACKUP_DIR"
 run chmod +x "$CONFIG/omarchy/hooks/theme-set.d/macos-appearance"
 
 # --- shell plugins ----------------------------------------------------------
@@ -240,6 +268,7 @@ cat <<EOF
     ${bold}Switching appearance${reset}
       omarchy theme set macos-dark      dark mode
       omarchy theme set macos-light     light mode
+      omarchy theme set ironman         Iron Man, Mark III
 
     ${bold}Keys${reset}
       SUPER+Q          close window (Cmd+Q)      SUPER+TAB    cycle windows (Cmd+Tab)
