@@ -49,10 +49,22 @@ omarchy theme set macos-dark
 omarchy theme set ironman
 ```
 
-A `theme-set` hook moves the GTK theme, cursor, UI font and dock styling in step
-with the palette. Switch to any other Omarchy theme and the hook hands the
-system back to the stock Adwaita look, so this project doesn't quietly restyle
-every theme on the machine.
+**Every other Omarchy theme keeps working too.** A `theme-set` hook moves the
+GTK theme, colour scheme and dock styling in step with whichever theme you pick:
+the `macos-*` pair get WhiteSur, `ironman` gets its own treatment, and anything
+else -- stock or third-party -- gets Adwaita matched to the `mode = "light"` or
+`mode = "dark"` the theme declares. So `omarchy theme set tokyo-night` gives you
+dark Adwaita apps and a dark dock, and `catppuccin-latte` gives you light ones.
+
+The window chrome is theme-independent, so a stock theme still gets title bars,
+traffic lights and a border in *its own* colours -- Nord's title bars come out
+`#2e3440` with an `#81a1c1` border, Gruvbox's `#282828` with `#7daea3`.
+
+The pointer and UI font stay constant across every theme. That is deliberate:
+the chrome applies to all themes, so reverting only the pointer and font for
+stock themes left them looking half-converted rather than neutral. Keeping them
+fixed means switching theme changes the colours and nothing else.
+`./uninstall.sh` is what puts the fully stock look back.
 
 ### Iron Man, Mark III
 
@@ -156,12 +168,16 @@ half-applied widget, and the anchor in that file needs updating.
 
 ## Notes
 
-- **Backups of the theme hook go to `~/.config/omarchy/hooks/.backups/`**, not
-  next to the original. `omarchy-hook` runs *every* file in a `<event>.d/`
-  directory -- it skips only `*.sample` and does not check the executable bit --
-  so a `macos-appearance.bak.*` left in `theme-set.d/` runs alongside the real
-  hook and, sorting after it, silently undoes whatever it just set. `install.sh`
-  also sweeps out any stragglers left by earlier versions.
+- **Backups go to `~/.config/omarchy/.backups/`**, deliberately outside every
+  directory Omarchy enumerates. Two of them are scanned wholesale, and a backup
+  left in either becomes live config:
+  `omarchy-hook` runs *every* file in a `<event>.d/` directory (it skips only
+  `*.sample` and does not check the executable bit), so a `macos-appearance.bak.*`
+  runs alongside the real hook and, sorting after it, undoes what it just set;
+  and `omarchy-theme-list` treats *every* directory under `themes/` as a theme,
+  dot-directories included, so a `macos-light.bak.*` shows up in the picker as
+  "Macos Light.bak.1788181233". `install.sh` sweeps out stragglers left by
+  earlier versions of this project.
 
 - The pointer is set to **32px**, not Omarchy's 24. The Tahoe theme ships art at
   32/48/64/96 with no 24px frame, so 24 renders the 32px bitmap scaled down and
