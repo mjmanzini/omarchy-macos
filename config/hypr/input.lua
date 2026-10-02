@@ -23,4 +23,12 @@ hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 
 -- Four-finger swipe up opens Mission Control, matching the Mac trackpad
 -- gesture. The three-finger horizontal swipe above still moves between Spaces.
-hl.gesture({ fingers = 4, direction = "up", action = function() hl.plugin.hyprexpo.expo("toggle") end })
+-- Hyprspace is the macOS-style overview; hyprexpo's grid is the fallback.
+local function mission_control()
+  if hl.plugin and hl.plugin.overview then
+    hl.plugin.overview.toggle()
+  elseif hl.plugin and hl.plugin.hyprexpo then
+    hl.plugin.hyprexpo.expo("toggle")
+  end
+end
+hl.gesture({ fingers = 4, direction = "up", action = mission_control })

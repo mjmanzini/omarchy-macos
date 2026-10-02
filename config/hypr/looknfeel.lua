@@ -263,3 +263,51 @@ hl.config({
     },
   },
 })
+
+-- ---------------------------------------------------------------------------
+-- Mission Control (Hyprspace)
+-- ---------------------------------------------------------------------------
+-- The macOS-style overview: a frosted strip of Spaces along the top, each a
+-- live miniature with its windows, and the current Space below it. Click a
+-- Space to switch, drag a window onto one to move it there. When Hyprspace is
+-- installed CTRL+UP and the four-finger swipe up open this instead of the
+-- hyprexpo grid above, which stays as the fallback if Hyprspace won't build.
+-- Colours follow the active theme like the title bars do.
+if hl.plugin.overview then
+  local accent = theme_color("accent", "#007aff")
+  hl.config({
+    plugin = {
+      overview = {
+        panelColor = rgba(theme_bg, "99"),
+        panelBorderColor = rgba(theme_bg, "00"),
+        panelBorderWidth = 0,
+        panelHeight = 180,
+        workspaceMargin = 14,
+        workspaceBorderSize = 3,
+        workspaceActiveBorder = rgb(accent),
+        workspaceInactiveBorder = rgba(theme_bg, "00"),
+        workspaceActiveBackground = rgba(theme_bg, "cc"),
+        workspaceInactiveBackground = rgba(theme_bg, "88"),
+        -- Spaces centred along the top, as on a Mac. reservedArea keeps the
+        -- strip clear of the Omarchy bar.
+        centerAligned = true,
+        reservedArea = 30,
+        -- Spread the current Space's windows apart while the overview is up.
+        overrideGaps = true,
+        gapsIn = 20,
+        gapsOut = 60,
+        showNewWorkspace = true,
+        showEmptyWorkspace = false,
+        showSpecialWorkspace = false,
+        -- A plain click picks a window and leaves; dragging moves it.
+        exitOnClick = true,
+        switchOnDrop = true,
+        exitOnSwitch = true,
+        -- Opening is bound explicitly below; Hyprspace's own vertical swipe
+        -- would also fire on the three-finger Spaces gesture.
+        disableGestures = true,
+        exitKey = "Escape",
+      },
+    },
+  })
+end
