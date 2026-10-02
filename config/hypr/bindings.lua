@@ -113,5 +113,13 @@ o.bind("CTRL + LEFT", "Previous workspace (Spaces)", hl.dsp.focus({ workspace = 
 o.bind("CTRL + RIGHT", "Next workspace (Spaces)", hl.dsp.focus({ workspace = "e+1" }))
 
 -- Mission Control. macOS uses CTRL+Up; the four-finger swipe up lives in
--- input.lua. Inside the overview: arrows move, Return picks, Escape cancels.
-o.bind("CTRL + UP", "Mission Control", function() hl.plugin.hyprexpo.expo("toggle") end)
+-- input.lua. Hyprspace is the macOS-style overview (click a Space, drag
+-- windows between them, Escape closes); hyprexpo's grid is the fallback.
+local function mission_control()
+  if hl.plugin and hl.plugin.overview then
+    hl.plugin.overview.toggle()
+  elseif hl.plugin and hl.plugin.hyprexpo then
+    hl.plugin.hyprexpo.expo("toggle")
+  end
+end
+o.bind("CTRL + UP", "Mission Control", mission_control)

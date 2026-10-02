@@ -24,7 +24,7 @@ Then log out and back in.
 | **Glass** | Blur with vibrancy on the bar, dock, launcher, menus and notifications |
 | **Bar** | Apple logo menu at the far left, workspaces as page-control dots, clock on the right |
 | **Dock** | `nwg-dock-hyprland` at the bottom, centred, auto-hiding, frosted, with running-app dots |
-| **Mission Control** | `hyprexpo` grid on `CTRL+↑` or a four-finger swipe up |
+| **Mission Control** | `Hyprspace` on `CTRL+↑` or a four-finger swipe up: Spaces along the top, drag windows between them (falls back to the `hyprexpo` grid) |
 | **Themes** | `macos-light`, `macos-dark` and `ironman`, with rendered gradient wallpapers |
 | **Fonts** | SF Pro for UI, SF Mono for terminals |
 | **Pointer** | macOS Tahoe cursor at its native 32px |

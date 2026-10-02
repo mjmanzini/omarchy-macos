@@ -119,12 +119,16 @@ if $DO_PACKAGES; then
 
   step "Building the Hyprland plugins (hyprbars, hyprexpo)"
   info "hyprbars draws the real macOS title bars with traffic lights;"
-  info "hyprexpo is Mission Control. Both compile against your Hyprland."
+  info "Hyprspace is Mission Control (hyprexpo the fallback). All compile against your Hyprland."
   # `hyprpm add` on an already-added repo exits non-zero; that is fine.
   run hyprpm add https://github.com/hyprwm/hyprland-plugins || true
   run hyprpm add https://github.com/sandwichfarm/hyprexpo   || true
+  run hyprpm add https://github.com/KZDKM/Hyprspace         || true
   run hyprpm enable hyprbars || warn "could not enable hyprbars -- title bars will be missing"
   run hyprpm enable hyprexpo || warn "could not enable hyprexpo -- Mission Control will be missing"
+  # Hyprspace is the macOS-style Mission Control; without it CTRL+UP falls
+  # back to hyprexpo's plain workspace grid.
+  run hyprpm enable Hyprspace || warn "could not enable Hyprspace -- Mission Control falls back to a plain grid"
   ok "plugins built"
 else
   step "Skipping packages (--no-packages)"
