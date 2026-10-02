@@ -266,6 +266,10 @@ install_file "$REPO/config/nwg-dock-hyprland/style-dark.css"  "$CONFIG/nwg-dock-
 install_file "$REPO/config/omarchy/extensions/omarchy-menu.jsonc" "$CONFIG/omarchy/extensions/omarchy-menu.jsonc"
 install_file "$REPO/config/omarchy/hooks/theme-set.d/macos-appearance" "$CONFIG/omarchy/hooks/theme-set.d/macos-appearance" "$BACKUP_DIR"
 run chmod +x "$CONFIG/omarchy/hooks/theme-set.d/macos-appearance"
+# Rebuilds hyprbars/hyprexpo when `omarchy update` brings a new Hyprland;
+# without it the title bars and Mission Control disappear after an update.
+install_file "$REPO/config/omarchy/hooks/post-update.d/macos-plugins" "$CONFIG/omarchy/hooks/post-update.d/macos-plugins" "$BACKUP_DIR"
+run chmod +x "$CONFIG/omarchy/hooks/post-update.d/macos-plugins"
 
 # --- shell plugins ----------------------------------------------------------
 # The Apple-logo menu button and the page-control workspace dots are edits to

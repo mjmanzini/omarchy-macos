@@ -39,6 +39,12 @@ if [[ -e "$HOOK" ]]; then
   mv "$HOOK" "$BACKUP_DIR/macos-appearance.removed.$STAMP"
   ok "removed: ${HOOK/#$HOME/\~}"
 fi
+HOOK="$CONFIG/omarchy/hooks/post-update.d/macos-plugins"
+if [[ -e "$HOOK" ]]; then
+  mkdir -p "$BACKUP_DIR"
+  mv "$HOOK" "$BACKUP_DIR/macos-plugins.removed.$STAMP"
+  ok "removed: ${HOOK/#$HOME/\~}"
+fi
 for f in "$CONFIG/nwg-dock-hyprland/style-light.css" \
          "$CONFIG/nwg-dock-hyprland/style-dark.css"; do
   [[ -e "$f" ]] && mv "$f" "$f.removed.$STAMP" && ok "removed: ${f/#$HOME/\~}"

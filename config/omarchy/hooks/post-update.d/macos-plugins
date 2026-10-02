@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Rebuild hyprbars and hyprexpo after `omarchy update` moves Hyprland.
+#
+# hyprpm plugins are compiled against one Hyprland build, and each plugin
+# refuses to start ("[hb] Version mismatch") unless the Hyprland commit AND the
+# minor versions of aquamarine, hyprutils, hyprlang, hyprcursor and hyprgraphics
+# all match what it was built with. When that happens the title bars, traffic
+# lights and Mission Control silently vanish at the next login.
+#
+# `hyprpm update` alone is not enough: it only notices a new Hyprland commit.
+# A same-version rebuild against a newer library (0.56.2-1 -> -2 moved
+# aquamarine 0.14 -> 0.15) leaves its cached headers stale while it reports
+# "Headers up to date", and it then rebuilds the plugins with the old versions
+# baked in. So compare its cached version.h with the one the hyprland package
+# ships, and force a full rebuild when they disagree.
+#
+# This runs inside the update terminal, where hyprpm can prompt for the sudo it
+# needs to write its cache in /var/cache/hyprpm.
+
+command -v hyprpm >/dev/null || exit 0
+
+versions() {
+  grep -E '^#define (GIT_COMMIT_HASH|[A-Z]+_VERSION) ' "$1" 2>/dev/null | tr -s ' ' | sort
+}
+
+system_h=/usr/include/hyprland/src/version.h
+cached_h="/var/cache/hyprpm/$(id -un)/headersRoot/include/hyprland/src/version.h"
+
+if [[ ! -f $system_h ]] || [[ "$(versions "$system_h")" != "$(versions "$cached_h")" ]] ||
+   hyprpm reload -n 2>&1 | grep -q 'not up-to-date'; then
+  echo "Rebuilding Hyprland plugins for the macOS look (hyprbars, hyprexpo)..."
+  if hyprpm update --force; then
+    echo "Plugins rebuilt -- log out and back in to load them."
+  else
+    echo "hyprpm update failed -- run 'hyprpm update --force' by hand, then log out and back in."
+  fi
+fi
