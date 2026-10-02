@@ -62,11 +62,5 @@
       ]
     }
   },
-  "plugins": [],
-  "disabledPlugins": [
-    "omarchy.menu"
-  ],
-  "cloneSourceRestores": [
-    "__USER__.menu"
-  ]
+  "plugins": []
 }

@@ -13,6 +13,7 @@ means upstream changed and the anchor here needs updating.
 Each edit is idempotent -- an already-patched file is reported as such.
 """
 
+import json
 import pathlib
 import sys
 
@@ -73,6 +74,32 @@ for path, anchor, replacement, done_marker in EDITS:
         continue
     path.write_text(text.replace(anchor, replacement, 1))
     print(f"  patched: {path.name}")
+
+# The menu clone must be a bar button only, never the menu itself. A clone that
+# keeps the "menu" kind and its clonedFrom link takes over every omarchy.menu
+# call, and Omarchy 4 hands third-party menus no app library -- so
+# Applications showed "Nothing here yet". As a plain widget it just draws the
+# Apple logo and toggles the stock first-party menu, which lists apps fine.
+
+menu_manifest = plugins / f"{user}.menu/manifest.json"
+if menu_manifest.exists():
+    manifest = json.loads(menu_manifest.read_text())
+    if manifest.get("kinds") == ["bar-widget"] and "omarchy" not in manifest:
+        print("  already a bar button: manifest.json")
+    else:
+        manifest["kinds"] = ["bar-widget"]
+        manifest.get("entryPoints", {}).pop("menu", None)
+        manifest.pop("keepLoaded", None)
+        manifest.pop("omarchy", None)
+        manifest["name"] = "Apple menu button"
+        manifest["description"] = "Apple logo that opens the Omarchy menu"
+        bar = manifest.setdefault("barWidget", {})
+        bar["displayName"] = manifest["name"]
+        bar["description"] = manifest["description"]
+        menu_manifest.write_text(json.dumps(manifest, indent=2) + "\n")
+        print("  made a bar button: manifest.json")
+else:
+    failed.append(f"{menu_manifest} does not exist -- did the clone step run?")
 
 if failed:
     print("\nPlugin patching failed:", file=sys.stderr)
